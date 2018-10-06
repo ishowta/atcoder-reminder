@@ -90,32 +90,36 @@ def generateContestResult(contest_list, contest_statistics_list, user_list):
 
 def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
     for time_count in range(0,60):
-        time.sleep(60)
         # コンテストに参加しているレート対象者全員のレートが更新されているかチェック
-
-        user_list = fetchUserList()
-
-        def checkChangeRate(user):
+        def checkChangeRateOptional(user):
             pre_user = pre_user_list[pre_user_list['name'] == user['name']]
+            if pre_user.empty:
+                return None
             count_diff = int(user['count']) - int(pre_user['count'])
             if count_diff != 0:
                 return True
             return False
-
-        def getPreRating(user_result):
+        def getPreRatingOptional(user_result):
             pre_user = pre_user_list[pre_user_list['name'] == user_result['name']]
-            return (int)(pre_user['rating'])
-
+            return (int)(pre_user['rating']) if not pre_user.empty else None
         def selectRatedUser(contest, statistics):
-            isRatedUser = lambda user_result: ((getPreRating(user_result) <= contest['rating_limit']) and user_result['isJoin'])
+            def isRatedUser(user_result):
+                rating = getPreRatingOptional(user_result)
+                if rating is None:
+                    return user_result['isJoin']
+                else:
+                    return user_result['isJoin'] and (rating <= contest['rating_limit'])
             return statistics['result'][[isRatedUser(user_result) for i,user_result in statistics['result'].iterrows()]]
 
+        user_list = fetchUserList()
+        new_user_list = user_list[user_list['name'].isin(pre_user_list['name'])]
         rated_user_name_list = set(user for (i,c), s in zip(contest_list.iterrows(), contest_statistics_list) for user in list(selectRatedUser(c, s)['name']))
         rated_user_list = user_list[user_list['name'].isin(rated_user_name_list)]
-        changed_user_list = rated_user_list[[checkChangeRate(user) for i,user in rated_user_list.iterrows()]]
+        changed_user_list = rated_user_list[[checkChangeRateOptional(user) or True for i,user in rated_user_list.iterrows()]]
         changed_user_name_list = changed_user_list['name'].values
         logger.info('rated user  : '+','.join(rated_user_name_list))
         logger.info('change user : '+','.join(changed_user_name_list))
+        logger.info('(new user)  : '+','.join(new_user_list))
         if len(changed_user_list) != len(rated_user_list):
             logger.info('Not all rates have been updated yet...')
         else:
@@ -125,6 +129,7 @@ def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
                 else:
                     exit()
             break
+        time.sleep(60)
 
 def generateContestChart(uesr_list, pre_user_list):
     user_list['rating_diff'] = [user['rating'] - int(pre_user_list[pre_user_list['name'] == user['name']]['rating']) for i,user in user_list.iterrows()]
