@@ -112,15 +112,14 @@ def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
             return statistics['result'][[isRatedUser(user_result) for i,user_result in statistics['result'].iterrows()]]
 
         user_list = fetchUserList()
-        new_user_list = user_list[user_list['name'].isin(pre_user_list['name'])]
         rated_user_name_list = set(user for (i,c), s in zip(contest_list.iterrows(), contest_statistics_list) for user in list(selectRatedUser(c, s)['name']))
-        rated_user_list = user_list[user_list['name'].isin(rated_user_name_list)]
-        changed_user_list = rated_user_list[[checkChangeRateOptional(user) or True for i,user in rated_user_list.iterrows()]]
-        changed_user_name_list = changed_user_list['name'].values
-        logger.info('rated user  : '+','.join(rated_user_name_list))
-        logger.info('change user : '+','.join(changed_user_name_list))
-        logger.info('(new user)  : '+','.join(new_user_list))
-        if len(changed_user_list) != len(rated_user_list):
+        user_list['isRatedUser'] = user_list[user_list['name'].isin(rated_user_name_list)]
+        user_list['isNewUser'] = user_list[user_list['name'].isin(pre_user_list['name'])]
+        user_list['hasRateChanged'] = [(checkChangeRateOptional(user) or True) if user['isRatedUser'] else None for i,user in user_list.iterrows()]
+        logger.info('rated user  : '+','.join(user_list[user_list['isRatedUser']]['name'].values))
+        logger.info('change user : '+','.join(user_list[user_list['hasRateChanged']]['name'].values))
+        logger.info('(new user)  : '+','.join(user_list[user_list['isNewUser']]['name'].values))
+        if sum(user_list['hasRateChanged']) != sum(user_list['isRatedUser']):
             logger.info('Not all rates have been updated yet...')
         else:
             if time_count == 59:
