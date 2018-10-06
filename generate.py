@@ -167,7 +167,7 @@ def generateContestChart(uesr_list, pre_user_list):
     })
 
     rating_image = util.operateBrowser(
-        url='file://'+os.getcwd()+'/rating.html',
+        page=rating_html,
         return_screenshot=True,
         width=640,
         height=270,
