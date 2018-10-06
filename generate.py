@@ -134,7 +134,7 @@ def generateContestChart(uesr_list, pre_user_list):
     def empty(dataframe):
         return dataframe if not dataframe.empty else None
     user_list['rating_diff'] = [(user['rating'] - int(pre_user_list[pre_user_list['name'] == user['name']]['rating'])) if sum(pre_user_list['name'] == user['name']) == 1 else 0 for i,user in user_list.iterrows()]
-    user_list['rank_diff'] = [(user['rank'] - int(pre_user_list[pre_user_list['name'] == user['name']]['rank'])) if sum(pre_user_list['name'] == user['name']) == 1 else 0 for i,user in user_list.iterrows()]
+    user_list['rank_diff'] = [(int(pre_user_list[pre_user_list['name'] == user['name']]['rank']) - user['rank']) if sum(pre_user_list['name'] == user['name']) == 1 else 0 for i,user in user_list.iterrows()]
 
     logger.info('get users chart')
     user_chart_list = [util.scrape('https://beta.atcoder.jp/users/'+user['name'], '//*[@id="main-container"]/div/div[3]/script[2]/text()')[0] for i, user in user_list.iterrows()]
