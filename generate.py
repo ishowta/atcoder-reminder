@@ -182,7 +182,7 @@ if __name__ == '__main__':
     parser.add_argument('contest_id_list', nargs='+',)
     args = parser.parse_args()
 
-    config = configparser.SafeConfigParser()
+    config = configparser.ConfigParser()
     config.read('config.ini')
 
     Slack = slack.Slack(
