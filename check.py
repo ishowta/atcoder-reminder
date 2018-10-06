@@ -30,44 +30,41 @@ def updateContestList(fetched_contest_list):
 	fn = 'data/contest_list.pickle'
 	if os.path.exists(fn):
 		contest_list = pickle.load(open(fn, 'rb'))
-		added_contest_list = fetched_contest_list[ ~fetched_contest_list['id'].isin(contest_list['id']) ]
-		contest_list.append(added_contest_list).to_pickle(fn)
+		new_contest_list = fetched_contest_list[ ~fetched_contest_list['id'].isin(contest_list['id']) ]
+		contest_list.append(new_contest_list).to_pickle(fn)
 	else:
 		fetched_contest_list.to_pickle(fn)
-		added_contest_list = fetched_contest_list
-	return added_contest_list
+		new_contest_list = fetched_contest_list
+	return new_contest_list
 
-def setContestReminder(added_contest_list):
-	if len(added_contest_list) == 0:
-		logger.info("There is no new contest.")
-	else:
-		for i,contests in added_contest_list.groupby('date').__iter__():
-			# remind notify contest
-			contests_link_str_list = ['<https://beta.atcoder.jp'+c['link']+'|'+c['title']+('' if c['is_rating'] else '（レート変動なし）')+'>' for i,c in contests.iterrows()]
-			Slack.setReminder(
-				config['slack']['channel_name'],
-				contests.iloc[0]['date'] - dt.timedelta(hours=12),
-				'今日の' + contests.iloc[0]['date'].strftime('%H:%M')+'から '+'・'.join(contests_link_str_list)+' が行われます'
-			)
-			Slack.setReminder(
-				config['slack']['channel_name'],
-				contests.iloc[0]['date'] - dt.timedelta(minutes=15),
-				'開始15分前です'
-			)
-		for i,contests in added_contest_list.groupby('finish_date').__iter__():
-			# remind generate contest result
-			contest_id_list = [c['id'] for i,c in contests.iterrows()]
-			util.setReminder(
-				contests.iloc[0]['finish_date'] + dt.timedelta(seconds=30),
-				'cd '+os.getcwd()+' && python3 generate.py '+' '.join(contest_id_list)+' >> log/generate.log 2>&1'
-			)
+def setContestReminder(new_contest_list):
+	for i,contests in new_contest_list.groupby('date').__iter__():
+		# remind notify contest
+		contests_link_str_list = ['<https://beta.atcoder.jp'+c['link']+'|'+c['title']+('' if c['is_rating'] else '（レート変動なし）')+'>' for i,c in contests.iterrows()]
+		Slack.setReminder(
+			config['slack']['channel_name'],
+			contests.iloc[0]['date'] - dt.timedelta(hours=12),
+			'今日の' + contests.iloc[0]['date'].strftime('%H:%M')+'から '+'・'.join(contests_link_str_list)+' が行われます'
+		)
+		Slack.setReminder(
+			config['slack']['channel_name'],
+			contests.iloc[0]['date'] - dt.timedelta(minutes=15),
+			'開始15分前です'
+		)
+	for i,contests in new_contest_list.groupby('finish_date').__iter__():
+		# remind generate contest result
+		contest_id_list = [c['id'] for i,c in contests.iterrows()]
+		util.setReminder(
+			contests.iloc[0]['finish_date'] + dt.timedelta(seconds=30),
+			'cd '+os.getcwd()+' && python3 generate.py '+' '.join(contest_id_list)+' >> log/generate.log 2>&1'
+		)
 
 if __name__ == '__main__':
 	logging.basicConfig()
 	logger = logging.getLogger(__name__)
 	logger.setLevel(logging.INFO)
 
-	config = configparser.SafeConfigParser()
+	config = configparser.ConfigParser()
 	config.read('config.ini')
 
 	Slack = slack.Slack(
@@ -81,7 +78,11 @@ if __name__ == '__main__':
 	fetched_contest_list = fetchContestList()
 
 	logger.info('update contest list')
-	added_contest_list = updateContestList(fetched_contest_list)
+	new_contest_list = updateContestList(fetched_contest_list)
 
-	logger.info('set contest reminder')
-	setContestReminder(added_contest_list)
+	if len(new_contest_list) == 0:
+		logger.info("contest")
+		logger.info("There is no new contest.")
+	else:
+		logger.info('set contest reminder')
+		setContestReminder(new_contest_list)
