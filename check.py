@@ -59,6 +59,9 @@ def setContestReminder(new_contest_list):
 			'cd '+os.getcwd()+' && python3 generate.py '+' '.join(contest_id_list)+' >> log/generate.log 2>&1'
 		)
 
+def selectTodaysContestList(contest_list):
+	return contest_list[contest_list['date'] - dt.datetime.now() < dt.timedelta(days=1)]
+
 if __name__ == '__main__':
 	logging.basicConfig()
 	logger = logging.getLogger(__name__)
@@ -77,8 +80,12 @@ if __name__ == '__main__':
 	logger.info('fetch contest list')
 	fetched_contest_list = fetchContestList()
 
+	# コンテスト情報が変更されるかもしれないので、開始まで一日を切ったコンテストのみ登録する
+	logger.info('select todays contest list')
+	todays_contest_list = selectTodaysContestList(fetched_contest_list)
+
 	logger.info('update contest list')
-	new_contest_list = updateContestList(fetched_contest_list)
+	new_contest_list = updateContestList(todays_contest_list)
 
 	if len(new_contest_list) == 0:
 		logger.info("contest")
