@@ -11,3 +11,4 @@ ipython==6.5.0
 webdriver-manager==1.7
 html5lib==1.0.1
 bs4==0.0.1
+mypy==0.630

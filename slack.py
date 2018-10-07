@@ -1,5 +1,5 @@
 import util
-import urllib
+import urllib.parse
 import requests
 from PIL import Image
 from IPython import embed
@@ -27,15 +27,12 @@ class Slack():
 			}
 		)
 	def postImage(self, name, channel, title, image_url=None, image=None):
-		if image is not None:
-			if type(image) == Image.Image:
-				image_io = io.BytesIO()
-				image.save(image_io, format='png')
-				image_bin = image_io.getvalue()
-			else:
-				image_bin = image
+		if image is not None and type(image) == Image.Image:
+			image_io = io.BytesIO()
+			image.save(image_io, format='png')
+			image = image_io.getvalue()
 		else:
-			image_bin = open(image_url, 'rb')
+			image = open(image_url, 'rb')
 		requests.post(
 			'https://slack.com/api/files.upload',
 			data = {
@@ -44,8 +41,8 @@ class Slack():
 				'title': title,
 			},
 			files = {
-				'file': (name, image_bin, 'image/png'),
+				'file': (name, image, 'image/png'),
 			}
 		)
-	def setReminder(self, channel, date, command):
-		util.setReminder(date, 'curl -X POST -d "token='+self.legacy_token+'" -d "channel='+channel+'" -d "username='+self.name+'" -d "icon_emoji=%3A'+self.icon+'%3A" -d "text='+urllib.parse.quote(command)+'" https://slack.com/api/chat.postMessage >> log/slack.txt 2>&1')
+	def setReminder(self, channel, date, comment):
+		util.setReminder(date, 'curl -X POST -d "token='+self.legacy_token+'" -d "channel='+channel+'" -d "username='+self.name+'" -d "icon_emoji=%3A'+self.icon+'%3A" -d "text='+urllib.parse.quote(comment)+'" https://slack.com/api/chat.postMessage >> log/slack.txt 2>&1')
