@@ -1,6 +1,7 @@
 import os
 import time
 import io
+import random
 import datetime as dt
 import pandas as pd
 import datetime
@@ -30,7 +31,7 @@ def fullpage_screenshot(driver):
 
     page_image = Image.new('RGB', (page_width, page_height))
 
-    fn = 'tmp/' + str(dt.datetime.now().timestamp())
+    fn = 'tmp/' + str(random.random())
 
     for count, view in enumerate(view_list):
         driver.execute_script("window.scrollTo({0}, {1})".format(view.x, view.y))
@@ -61,7 +62,7 @@ def operateBrowser(url=None, page=None, op=None, return_screenshot=False, width=
 		chrome_options = options
 	)
 	if page is not None:
-		fn = 'tmp/' + str(dt.datetime.now().timestamp()) + '.html'
+		fn = 'tmp/' + str(random.random()) + '.html'
 		with io.open(fn, 'w', encoding='utf-8') as fh:
 			fh.write(page)
 		url='file://'+os.getcwd()+'/'+fn
