@@ -124,6 +124,8 @@ def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
         if sum(user_list['hasRateChanged']) != sum(user_list['isRatedUser']):
             logger.info('Not all rates have been updated yet...')
         else:
+            time.sleep(5)  # countの更新とrateの更新の間にラグがあるみたいなので少し待ってみる（５秒で足りない可能性あり）
+            logger.info('Rate change!')
             return
         time.sleep(60)
     # timeout
