@@ -115,8 +115,9 @@ def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
         user_list = fetchUserList()
         rated_user_name_list = set(user for (i,c), s in zip(contest_list.iterrows(), contest_statistics_list) for user in list(selectRatedUser(c, s)['name']))
         user_list['isRatedUser'] = user_list['name'].isin(rated_user_name_list)
-        user_list['isNewUser'] = user_list['name'].isin(pre_user_list['name'])
+        user_list['isNewUser'] = ~user_list['name'].isin(pre_user_list['name'])
         user_list['hasRateChanged'] = [(checkChangeRate(user) or True) if user['isRatedUser'] else False for i,user in user_list.iterrows()]
+        user_list['hasRateChanged'] = [(checkChangeRate(user) if checkChangeRate(user) is not None else True) if user['isRatedUser'] else False for i,user in user_list.iterrows()]
         logger.info('rated user  : '+','.join(user_list[user_list['isRatedUser']]['name'].values))
         logger.info('change user : '+','.join(user_list[user_list['hasRateChanged']]['name'].values))
         logger.info('(new user)  : '+','.join(user_list[user_list['isNewUser']]['name'].values))
