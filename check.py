@@ -11,19 +11,19 @@ import util
 import slack
 
 def fetchContestList():
-	raw_contest_list = util.scrapeTable(url='https://beta.atcoder.jp/contests?lang=en')[1]
-	date_list = raw_contest_list['Start Time,(local time)'].map(lambda x: dt.datetime.strptime(x.split(',')[1][:-5], '%Y-%m-%d %H:%M:%S'))
-	time_list = raw_contest_list['Duration'].map(lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x[0:2]),minutes=int(x[3:5])))
+	raw_contest_list = util.scrapeTable(url='https://beta.atcoder.jp/contests?lang=ja')[1]  # 予定されているコンテストが存在しない場合過去のコンテストテーブルを参照してしまう
+	date_list = raw_contest_list['開始時刻'].map(lambda x: dt.datetime.strptime(x.split(',')[1][:-5], '%Y-%m-%d %H:%M:%S'))
+	time_list = raw_contest_list['時間'].map(lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x[0:2]),minutes=int(x[3:5])))
 	get = lambda i: lambda x: x.split(',')[i]
 	return pd.DataFrame({
-		'id'			: raw_contest_list['Contest Name'].map(get(0)),
+		'id'			: raw_contest_list['コンテスト名'].map(get(0)),
 		'date'			: date_list,
-		'title'			: raw_contest_list['Contest Name'].map(get(1)),
-		'link'			: raw_contest_list['Contest Name'].map(get(0)),
+		'title'			: raw_contest_list['コンテスト名'].map(get(1)),
+		'link'			: raw_contest_list['コンテスト名'].map(get(0)),
 		'time'			: time_list,
 		'finish_date'	: [d+t for d,t in zip(date_list, time_list)],
-		'is_rating'		: raw_contest_list['Rated Range'].map(lambda x: x != '×'),
-		'rating_limit'	: raw_contest_list['Rated Range'].map(lambda x: -1 if x == '×' else 99999 if x == 'All' else int(x[2:])),
+		'is_rating'		: raw_contest_list['Rated対象'].map(lambda x: x != '×'),
+		'rating_limit'	: raw_contest_list['Rated対象'].map(lambda x: -1 if x == '×' else 99999 if x == 'All' else int(x[2:])),
 	})
 
 def updateContestList(fetched_contest_list):
