@@ -214,6 +214,10 @@ if __name__ == '__main__':
     contest_list_path = 'data/contest_list.pickle'
     user_list_path = 'data/user_list.pickle'
 
+    # 更新前のユーザー情報のフェッチ、DBに保存
+    logger.info('fetch and save previous user statistics')
+    fetchUserList().to_pickle(user_list_path)
+
     # コンテスト情報のロード
     logger.info('load contest data')
     all_contest_list = pickle.load(open(contest_list_path, 'rb'))
