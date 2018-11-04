@@ -185,6 +185,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('contest_id_list', nargs='+',)
+    parser.add_argument('--data_path', default='data')
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
@@ -211,12 +212,8 @@ if __name__ == '__main__':
 
     logger.info(' '.join(args.contest_id_list))
 
-    contest_list_path = 'data/contest_list.pickle'
-    user_list_path = 'data/user_list.pickle'
-
-    # 更新前のユーザー情報のフェッチ、DBに保存
-    logger.info('fetch and save previous user statistics')
-    fetchUserList().to_pickle(user_list_path)
+    contest_list_path = args.data_path + '/contest_list.pickle'
+    user_list_path = args.data_path + '/user_list.pickle'
 
     # コンテスト情報のロード
     logger.info('load contest data')
