@@ -58,7 +58,7 @@ def operateBrowser(url=None, page=None, op=None, return_screenshot=False, width=
 	options.add_argument('--window-size='+str(width)+','+str(height))
 	options.add_argument('--no-sandbox')
 	driver = webdriver.Chrome(
-		executable_path = chrome.ChromeDriverManager().install(),
+		executable_path = chrome.ChromeDriverManager('2.41').install(),
 		chrome_options = options
 	)
 	if page is not None:
