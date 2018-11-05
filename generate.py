@@ -149,17 +149,19 @@ def generateContestChart(uesr_list, pre_user_list):
                 driver.execute_script('initChart2()')
             driver.execute_script('stage_graph.update()')
 
-        # save web page with image
+        # Save web page with image
         return util.operateBrowser(
+            # このhtmlとchart.jsはAtcoderのサイトからダウンロードしたものを適当に書き換えたもの
             url='file://'+os.getcwd()+'/chart/template.html',
             return_screenshot=True,
             op=printChartOp
         )
+    # 左端のタイムスタンプ,右端のタイムスタンプ,レート下限,レート上限
     im1 = generateChart((1502372400, int(dt.datetime.now().timestamp()) + 1000000, 0, 2000))
     im2 = generateChart((1521540800, int(dt.datetime.now().timestamp()) + 1000000, 0, 800))
     im1 = im1.crop((0, 0, 700, 400))
     im2 = im2.crop((0, 0, 700, 400))
-    chart_image = util.get_concat_v(im1, im2)
+    chart_image = util.concat_images_vertical(im1, im2)
 
     logger.info('generate contest result')
     rating_html = Jinja2.get_template('rating.tpl.html').render({
@@ -173,8 +175,8 @@ def generateContestChart(uesr_list, pre_user_list):
         height=270,
     )
 
-    # ２つのページをくっつけて写真をとる
-    contest_chart = util.get_concat_h(rating_image, chart_image)
+    # ２つのページをくっつける
+    contest_chart = util.concat_images_horizontal(rating_image, chart_image)
 
     return contest_chart
 
@@ -210,7 +212,7 @@ if __name__ == '__main__':
         int=int,
     )
 
-    logger.info(' '.join(args.contest_id_list))
+    logger.info('contest list: '+' '.join(args.contest_id_list))
 
     contest_list_path = args.data_path + '/contest_list.pickle'
     user_list_path = args.data_path + '/user_list.pickle'
@@ -220,37 +222,37 @@ if __name__ == '__main__':
     all_contest_list = pickle.load(open(contest_list_path, 'rb'))
     contest_list = all_contest_list[all_contest_list.id.isin(args.contest_id_list)]
     if len(contest_list) != len(args.contest_id_list):
-        logger.error('contest does not exist in DB.')
+        logger.error('a few contests does not exist in DB.')
         exit()
 
     # コンテスト結果のフェッチ
     logger.info('fetch contest statistics')
     contest_statistics_list = list(map(fetchContestStatistics, args.contest_id_list))
-    if all(c['result'].empty for c in contest_statistics_list):
-        logger.info('No one play contest.')
+    if all(cs['result'].empty for cs in contest_statistics_list):
+        logger.info('No one play any contest.')
         exit()
 
     # ユーザー情報のフェッチ
     logger.info('fetch user statistics')
     user_list = fetchUserList()
 
-    # コンテスト結果の生成
-    logger.info('generate contest result')
+    # コンテスト結果画像の生成
+    logger.info('generate contest result image')
     result = generateContestResult(contest_list, contest_statistics_list, user_list)
 
     # コンテスト結果を投稿
+    logger.info('post contest result')
     Slack.postImage(
-        'chart-'+str(dt.datetime.now().timestamp()) + '.png',
+        'result-'+str(dt.datetime.now().timestamp()) + '.png',
         config['slack']['channel_name'],
         'Contest Result',
         image=result
     )
-    logger.info('post ok, done!')
 
     # レート対象でないコンテストを除外
     contest_list = contest_list[contest_list['is_rating'] == True]
     if len(contest_list) == 0:
-        logger.info('rated contest does not exist.')
+        logger.info('rated contest does not exist. finish.')
         exit()
 
     # 前回のユーザー情報のロード
@@ -265,14 +267,16 @@ if __name__ == '__main__':
     updated_user_list = fetchUserList()
     updated_user_list.to_pickle(user_list_path)
 
-    # チャートの生成
-    logger.info('generate contest chart')
+    # チャート画像の生成
+    logger.info('generate contest chart image')
     chart = generateContestChart(updated_user_list, pre_user_list)
 
     # チャートを投稿
+    logger.info('post chart')
     Slack.postImage(
         'chart-'+str(dt.datetime.now().timestamp()) + '.png',
         config['slack']['channel_name'],
         'Rating Update',
         image=chart)
-    logger.info('post ok, done!')
+
+    logger.info('post ok, all done!')
