@@ -90,7 +90,7 @@ def generateContestResult(contest_list, contest_statistics_list, user_list):
     return result_image
 
 def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
-    for time_count in range(0,60):
+    for time_count in range(0,60 * 2):
         # コンテストに参加しているレート対象者全員のレートが更新されているかチェック
         def checkChangeRate(user) -> Optional[bool]:
             pre_user = pre_user_list[pre_user_list['name'] == user['name']]
