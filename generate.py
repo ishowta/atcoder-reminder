@@ -39,7 +39,7 @@ def fetchContestStatistics(link):
     del raw_contest_statistics['Rank']
     del raw_contest_statistics['User']
     del raw_contest_statistics['Score']
-    isCorrect = lambda item: len(item.split(',')) >= 2
+    isCorrect = lambda item: len(str(item).split(',')) >= 2
     points = raw_contest_statistics.applymap(isCorrect)
 
     result['isJoin'] = [any(item != '-' for i,item in row.iteritems()) for i, row in raw_contest_statistics.iterrows()]
