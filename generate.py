@@ -14,6 +14,7 @@ from IPython import embed
 import util
 import slack
 import logging
+from typing import Optional
 
 def fetchContestStatistics(link):
     def browserOp(driver):
@@ -91,7 +92,7 @@ def generateContestResult(contest_list, contest_statistics_list, user_list):
 def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
     for time_count in range(0,60):
         # コンテストに参加しているレート対象者全員のレートが更新されているかチェック
-        def checkChangeRateOptional(user):
+        def checkChangeRate(user) -> Optional[bool]:
             pre_user = pre_user_list[pre_user_list['name'] == user['name']]
             if pre_user.empty:
                 return None
@@ -99,40 +100,35 @@ def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
             if count_diff != 0:
                 return True
             return False
-        def getPreRatingOptional(user_result):
+        def getPreRating(user_result) -> Optional[int]:
             pre_user = pre_user_list[pre_user_list['name'] == user_result['name']]
             return (int)(pre_user['rating']) if not pre_user.empty else None
         def selectRatedUser(contest, statistics):
             def isRatedUser(user_result):
-                rating = getPreRatingOptional(user_result)
+                rating = getPreRating(user_result)
                 if rating is None:
                     return user_result['isJoin']
                 else:
-                    return user_result['isJoin'] and (rating <= contest['rating_limit'])
+                    return user_result['isJoin'] and (rating <= (int)(contest['rating_limit']))
             return statistics['result'][[isRatedUser(user_result) for i,user_result in statistics['result'].iterrows()]]
 
         user_list = fetchUserList()
         rated_user_name_list = set(user for (i,c), s in zip(contest_list.iterrows(), contest_statistics_list) for user in list(selectRatedUser(c, s)['name']))
         user_list['isRatedUser'] = user_list['name'].isin(rated_user_name_list)
         user_list['isNewUser'] = user_list['name'].isin(pre_user_list['name'])
-        user_list['hasRateChanged'] = [(checkChangeRateOptional(user) or True) if user['isRatedUser'] else False for i,user in user_list.iterrows()]
+        user_list['hasRateChanged'] = [(checkChangeRate(user) or True) if user['isRatedUser'] else False for i,user in user_list.iterrows()]
         logger.info('rated user  : '+','.join(user_list[user_list['isRatedUser']]['name'].values))
         logger.info('change user : '+','.join(user_list[user_list['hasRateChanged']]['name'].values))
         logger.info('(new user)  : '+','.join(user_list[user_list['isNewUser']]['name'].values))
         if sum(user_list['hasRateChanged']) != sum(user_list['isRatedUser']):
             logger.info('Not all rates have been updated yet...')
         else:
-            if time_count == 59:
-                if len(changed_user_list) > 0:
-                    break
-                else:
-                    exit()
-            break
+            return
         time.sleep(60)
+    # timeout
+    exit()
 
 def generateContestChart(uesr_list, pre_user_list):
-    def empty(dataframe):
-        return dataframe if not dataframe.empty else None
     user_list['rating_diff'] = [(user['rating'] - int(pre_user_list[pre_user_list['name'] == user['name']]['rating'])) if sum(pre_user_list['name'] == user['name']) == 1 else 0 for i,user in user_list.iterrows()]
     user_list['rank_diff'] = [(int(pre_user_list[pre_user_list['name'] == user['name']]['rank']) - user['rank']) if sum(pre_user_list['name'] == user['name']) == 1 else 0 for i,user in user_list.iterrows()]
 
