@@ -88,10 +88,12 @@ def generateContestResult(contest_list, contest_statistics_list, user_list):
 
     return result_image
 
-def waitRatingUpdate(contest_list, contest_statistics_list, user_list, pre_user_list):
+def waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
     for time_count in range(0,60):
         time.sleep(60)
         # コンテストに参加しているレート対象者全員のレートが更新されているかチェック
+
+        user_list = fetchUserList()
 
         def checkChangeRate(user):
             pre_user = pre_user_list[pre_user_list['name'] == user['name']]
@@ -112,8 +114,8 @@ def waitRatingUpdate(contest_list, contest_statistics_list, user_list, pre_user_
         rated_user_list = user_list[user_list['name'].isin(rated_user_name_list)]
         changed_user_list = rated_user_list[[checkChangeRate(user) for i,user in rated_user_list.iterrows()]]
         changed_user_name_list = changed_user_list['name'].values
-        logger.info('joined user: '+','.join(rated_user_name_list))
-        logger.info('change user: '+','.join(changed_user_name_list))
+        logger.info('rated user  : '+','.join(rated_user_name_list))
+        logger.info('change user : '+','.join(changed_user_name_list))
         if len(changed_user_list) != len(rated_user_list):
             logger.info('Not all rates have been updated yet...')
         else:
@@ -144,7 +146,7 @@ def generateContestChart(uesr_list, pre_user_list):
 
         # save web page with image
         return util.operateBrowser(
-            url='file://'+os.getcwd()+'/chart/test.html',
+            url='file://'+os.getcwd()+'/chart/template.html',
             return_screenshot=True,
             op=printChartOp
         )
@@ -204,9 +206,12 @@ if __name__ == '__main__':
 
     logger.info(' '.join(args.contest_id_list))
 
+    contest_list_path = 'data/contest_list.pickle'
+    user_list_path = 'data/user_list.pickle'
+
     # コンテスト情報のロード
     logger.info('load contest data')
-    all_contest_list = pickle.load(open('data/contest_list.pickle', 'rb'))
+    all_contest_list = pickle.load(open(contest_list_path, 'rb'))
     contest_list = all_contest_list[all_contest_list.id.isin(args.contest_id_list)]
     if len(contest_list) != len(args.contest_id_list):
         logger.error('contest does not exist in DB.')
@@ -222,11 +227,6 @@ if __name__ == '__main__':
     # ユーザー情報のフェッチ
     logger.info('fetch user statistics')
     user_list = fetchUserList()
-
-    # 前回のユーザー情報のロード
-    fn = 'data/user_list.pickle'
-    pre_user_list = pickle.load(open(fn, 'rb')) if os.path.exists(fn) else user_list
-    user_list.to_pickle(fn)
 
     # コンテスト結果の生成
     logger.info('generate contest result')
@@ -247,13 +247,21 @@ if __name__ == '__main__':
         logger.info('rated contest does not exist.')
         exit()
 
+    # 前回のユーザー情報のロード
+    pre_user_list = pickle.load(open(user_list_path, 'rb')) if os.path.exists(user_list_path) else user_list
+
     # レートが更新されるまで待つ
     logger.info('wait rating update')
-    waitRatingUpdate(contest_list, contest_statistics_list, user_list, pre_user_list)
+    waitRatingUpdate(contest_list, contest_statistics_list, pre_user_list)
+
+    # 更新後のユーザー情報のフェッチ、DBに保存
+    logger.info('fetch and save updated user statistics')
+    updated_user_list = fetchUserList()
+    updated_user_list.to_pickle(user_list_path)
 
     # チャートの生成
     logger.info('generate contest chart')
-    chart = generateContestChart(user_list, pre_user_list)
+    chart = generateContestChart(updated_user_list, pre_user_list)
 
     # チャートを投稿
     Slack.postImage(

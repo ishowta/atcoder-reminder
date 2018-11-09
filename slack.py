@@ -48,4 +48,4 @@ class Slack():
 			}
 		)
 	def setReminder(self, channel, date, command):
-		util.setReminder(date, 'curl -X POST -d "token='+self.legacy_token+'" -d "channel='+channel+'" -d "username='+self.name+'" -d "icon_emoji=%3A'+self.icon+'%3A" -d "text='+urllib.parse.quote(command)+'" https://slack.com/api/chat.postMessage >> log_slack.txt 2>&1')
+		util.setReminder(date, 'curl -X POST -d "token='+self.legacy_token+'" -d "channel='+channel+'" -d "username='+self.name+'" -d "icon_emoji=%3A'+self.icon+'%3A" -d "text='+urllib.parse.quote(command)+'" https://slack.com/api/chat.postMessage >> log/slack.txt 2>&1')
