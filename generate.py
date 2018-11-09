@@ -17,6 +17,22 @@ import logging
 from typing import Optional
 
 def fetchContestStatistics(link):
+    """
+    コンテスト結果を取得して返す
+        :param link: コンテストへのLink (e.g. `/contest/abc100`)
+        :return: {
+            result: {
+                rank: グループ内のランキング
+                global_rank: 世界ランク
+                name: ユーザー名
+                score: 合計スコア
+                isJoin: 参加しているか（参加登録していても一つも提出していない場合不参加扱いになる）
+            }
+            points: {
+                (問題名): 問題別のスコア
+            }
+        }
+    """
     def browserOp(driver):
         open = driver.find_element_by_id('standings-panel-heading')
         input = driver.find_element_by_id('input-affiliation')
@@ -47,6 +63,15 @@ def fetchContestStatistics(link):
     return {'result':result, 'points':points}
 
 def fetchUserList():
+    """
+    全ユーザーのデータを取得して返す
+        :return: {
+            name: ユーザー名
+            color: 色
+            rating: レーティング
+            count: コンテストに参加した回数（参加登録していても不参加の場合加算されない）
+        }
+    """
     def op(obj):
         try:
             if 'user-' in obj.span.attrs['class'][0]:
@@ -74,6 +99,13 @@ def fetchUserList():
     return user_list
 
 def generateContestResult(contest_list, contest_statistics_list, user_list):
+    """
+    全コンテスト結果から表を作成して返す
+        :param contest_list: 全コンテスト名
+        :param contest_statistics_list: 全コンテスト結果
+        :param user_list: 全ユーザーデータ
+        :return: 表の画像
+    """
     result_html = Jinja2.get_template('result.tpl.html').render({
         'contest_list': contest_list,
         'contest_statistics_list': contest_statistics_list,
@@ -90,6 +122,13 @@ def generateContestResult(contest_list, contest_statistics_list, user_list):
     return result_image
 
 def checkRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
+    """
+    レーティングが更新されたかチェックする
+        :param contest_list: 全コンテスト名
+        :param contest_statistics_list: 全コンテスト結果
+        :param pre_user_list: コンテスト前の全ユーザーデータ
+        :return: (bool) 更新されたか
+    """
     # コンテストに参加しているレート対象者全員のレートが更新されているかチェック
     def checkChangeRate(user) -> Optional[bool]:
         pre_user = pre_user_list[pre_user_list['name'] == user['name']]
@@ -126,6 +165,12 @@ def checkRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
         return True
 
 def generateContestChart(uesr_list, pre_user_list):
+    """
+    全ユーザーデータからレーティングチャートを作成して返す
+        :param uesr_list: 全ユーザーデータ
+        :param pre_user_list: コンテスト前の全ユーザーデータ
+        :return: レーティングチャートの画像
+    """
     user_list['rating_diff'] = [(user['rating'] - int(pre_user_list[pre_user_list['name'] == user['name']]['rating'])) if sum(pre_user_list['name'] == user['name']) == 1 else 0 for i,user in user_list.iterrows()]
     user_list['rank_diff'] = [(int(pre_user_list[pre_user_list['name'] == user['name']]['rank']) - user['rank']) if sum(pre_user_list['name'] == user['name']) == 1 else 0 for i,user in user_list.iterrows()]
 
