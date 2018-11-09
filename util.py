@@ -89,6 +89,8 @@ def scrapeTable(url=None, page=None, op=None, tableOp=None):
 			page = requests.get(url).text
 		else:
 			page = operateBrowser(url=url, op=op)
+
+	# `pd.read_html(htmlからtableを取ってくる関数)`でテーブル上のセルに対して任意のオペレーションを掛けられるようにする
 	def _extend_text_getter(self, obj):
 		if tableOp is not None:
 			res = tableOp(obj)
@@ -97,6 +99,7 @@ def scrapeTable(url=None, page=None, op=None, tableOp=None):
 		text = obj.get_text(separator=',', strip=True)
 		return text if obj.name == 'th' or obj.a is None else ','.join([obj.a.get('href'), text])
 	pd.io.html._BeautifulSoupHtml5LibFrameParser._text_getter = _extend_text_getter
+
 	data = pd.read_html(page, flavor='bs4')
 	return data
 
@@ -105,14 +108,14 @@ def setReminder(date, command):
 	subprocess.Popen('at %s <<< \'%s\'' % (date_s, command), shell=True, executable='/bin/bash')
 	logger.info('set new reminder : at %s <<< \'%s\'' % (date_s, command))
 
-def get_concat_v(im1, im2):
+def concat_images_vertical(im1, im2):
     dst = Image.new('RGB', (max(im1.width, im2.width),
                             (im1.height + im2.height)), (255, 255, 255))
     dst.paste(im1, (0, 0))
     dst.paste(im2, (0, im1.height))
     return dst
 
-def get_concat_h(im1, im2):
+def concat_images_horizontal(im1, im2):
     dst = Image.new('RGB', ((im1.width + im2.width),
                             max(im1.height, im2.height)), (255, 255, 255))
     dst.paste(im1, (0, 0))
