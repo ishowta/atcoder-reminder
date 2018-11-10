@@ -36,22 +36,22 @@ def fetchContestList() -> pd.DataFrame:
             })
     raw_contest_list = all_contest_list[2]
     """
-		返ってくるテーブルの型と例（pandas側の仕様上セルに入っているのはstringなので、すべて`split(',')`して取り出す）
-		raw_contest_list = [
-			{
-				開始時刻: [
-					(url) 'http://www.timeanddate.com/worldclock/fixedtime.html?iso=20181123T2100&p1=248',
-					('%Y-%m-%d %H:%M:%S+0900') '2018-11-23 21:00:00+0900'
-				],
-				コンテスト名: [
-					(link) '/contests/ddcc2019-qual',
-					(string) 'DISCO presents ディスカバリーチャンネル コードコンテスト2019 予選'
-				],
-				時間: (h:m) '01:30'
-				Rated対象: (`x` | `All` | `~ a`(a:int)) '~ 1199'
-			}
-		]
-	"""
+    返ってくるテーブルの型と例（pandas側の仕様上セルに入っているのはstringなので、すべて`split(',')`して取り出す）
+    raw_contest_list = [
+      {
+        開始時刻: [
+          (url) 'http://www.timeanddate.com/worldclock/fixedtime.html?iso=20181123T2100&p1=248',
+          ('%Y-%m-%d %H:%M:%S+0900') '2018-11-23 21:00:00+0900'
+        ],
+        コンテスト名: [
+          (link) '/contests/ddcc2019-qual',
+          (string) 'DISCO presents ディスカバリーチャンネル コードコンテスト2019 予選'
+        ],
+        時間: (h:m) '01:30'
+        Rated対象: (`x` | `All` | `~ a`(a:int)) '~ 1199'
+      }
+    ]
+  """
     date_list = raw_contest_list['開始時刻'].map(lambda x: dt.datetime.strptime(x.split(',')[1][:-5], '%Y-%m-%d %H:%M:%S'))
     time_list = raw_contest_list['時間'].map(lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x.split(':')[0]),minutes=int(x.split(':')[1])))
 
