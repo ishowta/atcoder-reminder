@@ -9,21 +9,22 @@ import pickle
 import logging
 import util
 import slack
+from typing import Optional, Any, Callable
 
 contest_list_file_path = 'data/contest_list.pickle'
 
-def readContestList():
+def readContestList() -> pd.DataFrame:
 	if os.path.exists(contest_list_file_path):
 		with open(contest_list_file_path, 'rb') as fh:
 			return pickle.load(fh)
 	else:
-		return pd.DataFrame([])
+		return pd.DataFrame(columns={'id','date','title','link','time','finish_date','is_rating','rating_limit'})
 
-def fetchContestList():
+def fetchContestList() -> pd.DataFrame:
 	all_contest_list = util.scrapeTable(url='https://beta.atcoder.jp/contests?lang=ja')
 	if len(all_contest_list) != 3:
 		# 予定されているコンテストが一つも無い場合
-		return pd.DataFrame([])
+		return pd.DataFrame(columns={'id','date','title','link','time','finish_date','is_rating','rating_limit'})
 	raw_contest_list = all_contest_list[2]
 
 	"""
@@ -45,7 +46,10 @@ def fetchContestList():
 	"""
 	date_list = raw_contest_list['開始時刻'].map(lambda x: dt.datetime.strptime(x.split(',')[1][:-5], '%Y-%m-%d %H:%M:%S'))
 	time_list = raw_contest_list['時間'].map(lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x.split(':')[0]),minutes=int(x.split(':')[1])))
-	get = lambda i: lambda x: x.split(',')[i]
+	def get(i: int) -> Callable:
+			def access(x: str) -> str:
+					return x.split(',')[i]
+			return access
 	return pd.DataFrame({
 		'id'			: raw_contest_list['コンテスト名'].map(get(0)),
 		'date'			: date_list,
@@ -57,13 +61,13 @@ def fetchContestList():
 		'rating_limit'	: raw_contest_list['Rated対象'].map(lambda x: -1 if x == '×' else 99999 if x == 'All' else int(x[2:])),
 	})
 
-def isNew(contest, previous_contest_list):
+def isNew(contest: pd.DataFrame, previous_contest_list: pd.DataFrame) -> bool:
 	return contest['id'] not in previous_contest_list['id'].values
 
-def hasHeldToday(contest):
+def hasHeldToday(contest: pd.DataFrame) -> bool:
 	return ( contest['date'] - dt.datetime.now() ) < dt.timedelta(days=1)
 
-def setContestReminder(new_contest_list):
+def setContestReminder(new_contest_list: pd.DataFrame) -> None:
 
 	# Remind notify contest
 	for i,contests in new_contest_list.groupby('date').__iter__():

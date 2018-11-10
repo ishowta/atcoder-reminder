@@ -14,9 +14,9 @@ from IPython import embed
 import util
 import slack
 import logging
-from typing import Optional
+from typing import Optional, Any, List, Tuple, Union, Callable
 
-def fetchContestStatistics(link):
+def fetchContestStatistics(link: str) -> pd.DataFrame:
     """
     コンテスト結果を取得して返す
         :param link: コンテストへのLink (e.g. `/contest/abc100`)
@@ -33,7 +33,7 @@ def fetchContestStatistics(link):
             }
         }
     """
-    def browserOp(driver):
+    def browserOp(driver: Any) -> None:
         open = driver.find_element_by_id('standings-panel-heading')
         input = driver.find_element_by_id('input-affiliation')
         driver.execute_script("document.getElementsByClassName('form-inline')[0].style.display = 'block';")
@@ -71,7 +71,10 @@ def fetchContestStatistics(link):
             }
         ]
     """
-    get = lambda i: lambda x: x.split(',')[i]
+    def get(i: int) -> Callable:
+        def access(x: str) -> str:
+            return x.split(',')[i]
+        return access
     result = pd.DataFrame({
         'rank'          : raw_contest_statistics.Rank.map(get(0)),
         'global_rank'   : raw_contest_statistics.Rank.map(lambda x: get(1)(x)[1:-1]),
@@ -89,7 +92,7 @@ def fetchContestStatistics(link):
 
     return {'result':result, 'points':points}
 
-def fetchUserList():
+def fetchUserList() -> pd.DataFrame:
     """
     全ユーザーのデータを取得して返す
         :return: {
@@ -99,7 +102,7 @@ def fetchUserList():
             count: コンテストに参加した回数（参加登録していても不参加の場合加算されない）
         }
     """
-    def op(obj):
+    def op(obj: Any) -> Optional[str]:
         try:
             if 'user-' in obj.span.attrs['class'][0]:
                 color = obj.span.attrs['class'][0].replace('user-','')
@@ -114,7 +117,10 @@ def fetchUserList():
         tableOp=op
     )[1]
 
-    get = lambda i: lambda x: x.split(',')[i]
+    def get(i: int) -> Callable:
+        def access(x: str) -> str:
+            return x.split(',')[i]
+        return access
     user_list = pd.DataFrame({
         'name'          : raw_user_list['User'].map(get(0)),
         'color'         : raw_user_list['User'].map(get(2)),
@@ -125,7 +131,7 @@ def fetchUserList():
 
     return user_list
 
-def generateContestResult(contest_list, contest_statistics_list, user_list):
+def generateContestResult(contest_list: pd.DataFrame, contest_statistics_list: pd.DataFrame, user_list: pd.DataFrame) -> Image.Image:
     """
     全コンテスト結果から表を作成して返す
         :param contest_list: 全コンテスト名
@@ -148,7 +154,7 @@ def generateContestResult(contest_list, contest_statistics_list, user_list):
 
     return result_image
 
-def checkRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
+def checkRatingUpdate(contest_list: pd.DataFrame, contest_statistics_list: pd.DataFrame, pre_user_list: pd.DataFrame) -> bool:
     """
     レーティングが更新されたかチェックする
         :param contest_list: 全コンテスト名
@@ -157,7 +163,7 @@ def checkRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
         :return: (bool) 更新されたか
     """
     # コンテストに参加しているレート対象者全員のレートが更新されているかチェック
-    def checkChangeRate(user) -> Optional[bool]:
+    def checkChangeRate(user: pd.Series) -> Optional[bool]:
         pre_user = pre_user_list[pre_user_list['name'] == user['name']]
         if pre_user.empty:
             return None
@@ -165,11 +171,11 @@ def checkRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
         if count_diff != 0:
             return True
         return False
-    def getPreRating(user_result) -> Optional[int]:
+    def getPreRating(user_result: pd.Series) -> Optional[int]:
         pre_user = pre_user_list[pre_user_list['name'] == user_result['name']]
         return (int)(pre_user['rating']) if not pre_user.empty else None
-    def selectRatedUser(contest, statistics):
-        def isRatedUser(user_result):
+    def selectRatedUser(contest: pd.DataFrame, statistics: pd.DataFrame) -> pd.DataFrame:
+        def isRatedUser(user_result: pd.Series) -> bool:
             rating = getPreRating(user_result)
             if rating is None:
                 return user_result['isJoin']
@@ -191,7 +197,7 @@ def checkRatingUpdate(contest_list, contest_statistics_list, pre_user_list):
     else:
         return True
 
-def generateContestChart(uesr_list, pre_user_list):
+def generateContestChart(uesr_list: pd.DataFrame, pre_user_list: pd.DataFrame) -> Image.Image:
     """
     全ユーザーデータからレーティングチャートを作成して返す
         :param uesr_list: 全ユーザーデータ
@@ -204,8 +210,8 @@ def generateContestChart(uesr_list, pre_user_list):
     logger.info('get users chart')
     user_chart_list = [util.scrape('https://beta.atcoder.jp/users/'+user['name'], '//*[@id="main-container"]/div/div[3]/script[2]/text()')[0] for i, user in user_list.iterrows()]
 
-    def generateChart(chart_range):
-        def printChartOp(driver):
+    def generateChart(chart_range: Tuple[int, int, int, int]) -> Image.Image:
+        def printChartOp(driver: Any) -> None:
             driver.execute_script(
                 "x_min=%d;x_max=%d;y_min=%d;y_max=%d" % chart_range)
             for ((i, u), chart) in zip(user_list.iterrows(), user_chart_list):

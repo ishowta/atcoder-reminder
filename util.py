@@ -13,11 +13,12 @@ from webdriver_manager import chrome
 from IPython import embed
 from collections import namedtuple
 import lxml.html
+from typing import Optional, Any, Union, List, Callable
 from PIL import Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def fullpage_screenshot(driver):
+def fullpage_screenshot(driver: Any) -> Image.Image:
     page_width = driver.execute_script("return document.body.offsetWidth")
     page_height = driver.execute_script("return document.body.parentNode.scrollHeight")
     view_width = driver.execute_script("return document.body.clientWidth")
@@ -52,7 +53,13 @@ def fullpage_screenshot(driver):
         os.remove(file_name)
     return page_image
 
-def operateBrowser(url=None, page=None, op=None, return_screenshot=False, width=1280, height=1024):
+def operateBrowser(
+		url: str = None,
+		page: str = None,
+		op: Callable[[Any], None] = None,
+		return_screenshot: bool = False,
+		width: int = 1280,
+		height:int = 1024) -> Union[Image.Image, str]:
 	options = webdriver.chrome.options.Options()
 	options.add_argument('--headless')
 	options.add_argument('--window-size='+str(width)+','+str(height))
@@ -77,21 +84,21 @@ def operateBrowser(url=None, page=None, op=None, return_screenshot=False, width=
 		driver.quit()
 	return page
 
-def scrape(url, *xpath_list):
+def scrape(url: str, *xpath_list: Union[str,List[str]]) -> Union[str, List[str]]:
 	page = requests.get(url).text
 	dom = lxml.html.fromstring(page)
 	result = [dom.xpath(xpath) for xpath in xpath_list]
 	return result if len(result) > 1 else result[0]
 
-def scrapeTable(url=None, page=None, op=None, tableOp=None):
-	if page is None:
+def scrapeTable(url: str = None, page: str = None, op: Callable[[Any], None] = None, tableOp: Callable[[Any],Optional[str]] = None) -> pd.DataFrame:
+	if page is None and url:
 		if op is None:
 			page = requests.get(url).text
 		else:
 			page = operateBrowser(url=url, op=op)
 
 	# `pd.read_html(htmlからtableを取ってくる関数)`でテーブル上のセルに対して任意のオペレーションを掛けられるようにする
-	def _extend_text_getter(self, obj):
+	def _extend_text_getter(self: Any, obj: Any) -> str:
 		if tableOp is not None:
 			res = tableOp(obj)
 			if res is not None:
@@ -103,19 +110,19 @@ def scrapeTable(url=None, page=None, op=None, tableOp=None):
 	data = pd.read_html(page, flavor='bs4')
 	return data
 
-def setReminder(date, command):
+def setReminder(date: datetime.datetime, command: str) -> None:
 	date_s = date.strftime('%H:%M %m%d%Y')
 	subprocess.Popen('at %s <<< \'%s\'' % (date_s, command), shell=True, executable='/bin/bash')
 	logger.info('set new reminder : at %s <<< \'%s\'' % (date_s, command))
 
-def concat_images_vertical(im1, im2):
+def concat_images_vertical(im1: Image.Image, im2: Image.Image) -> Image.Image:
     dst = Image.new('RGB', (max(im1.width, im2.width),
                             (im1.height + im2.height)), (255, 255, 255))
     dst.paste(im1, (0, 0))
     dst.paste(im2, (0, im1.height))
     return dst
 
-def concat_images_horizontal(im1, im2):
+def concat_images_horizontal(im1: Image.Image, im2: Image.Image) -> Image.Image:
     dst = Image.new('RGB', ((im1.width + im2.width),
                             max(im1.height, im2.height)), (255, 255, 255))
     dst.paste(im1, (0, 0))
