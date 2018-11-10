@@ -26,7 +26,7 @@ def fetchContestList():
 		return pd.DataFrame([])
 	raw_contest_list = all_contest_list[1]
 	date_list = raw_contest_list['開始時刻'].map(lambda x: dt.datetime.strptime(x.split(',')[1][:-5], '%Y-%m-%d %H:%M:%S'))
-	time_list = raw_contest_list['時間'].map(lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x[0:2]),minutes=int(x[3:5])))
+	time_list = raw_contest_list['時間'].map(lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x.split(':')[0]),minutes=int(x.split(':')[1])))
 	get = lambda i: lambda x: x.split(',')[i]
 	return pd.DataFrame({
 		'id'			: raw_contest_list['コンテスト名'].map(get(0)),
