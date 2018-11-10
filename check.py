@@ -1,15 +1,13 @@
 import pandas as pd
 import datetime as dt
-import re
 import os
-import sys
 from IPython import embed
 import configparser
 import pickle
 import logging
 import util
 import slack
-from typing import Optional, Any, Callable
+from typing import Callable
 
 contest_list_file_path = 'data/contest_list.pickle'
 

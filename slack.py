@@ -6,7 +6,7 @@ from IPython import embed
 import logging
 import io
 from datetime import datetime
-from typing import Optional, Any
+from typing import Any
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

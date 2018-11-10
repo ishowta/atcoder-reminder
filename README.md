@@ -12,5 +12,7 @@
 
 - コンテスト結果はjsで書いてhtmlをChromeから開いてしまっているので、とても環境に依存している…（macOSだとレイアウトが崩れる）
 - チャートグラフの描画はAtcoderのサイトのjsをそのまま使ってしまっている…
-- Type check
-  - `mypy .`
+- Linting & Type check
+  - `./check.sh`
+- Test
+  - `./test.sh`

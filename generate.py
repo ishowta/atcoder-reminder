@@ -1,11 +1,8 @@
 import os
-import sys
 import time
-import json
 import pickle
 import argparse
 import configparser
-from pprint import pprint, pformat
 import datetime as dt
 import pandas as pd
 import jinja2
@@ -14,7 +11,7 @@ from IPython import embed
 import util
 import slack
 import logging
-from typing import Optional, Any, List, Tuple, Union, Callable
+from typing import Any, Callable, Optional, Tuple
 
 
 def fetchContestStatistics(link: str) -> pd.DataFrame:
@@ -36,7 +33,7 @@ def fetchContestStatistics(link: str) -> pd.DataFrame:
     """
 
     def browserOp(driver: Any) -> None:
-        open = driver.find_element_by_id('standings-panel-heading')
+        driver.find_element_by_id('standings-panel-heading')
         input = driver.find_element_by_id('input-affiliation')
         driver.execute_script(
             "document.getElementsByClassName('form-inline')[0].style.display = 'block';"

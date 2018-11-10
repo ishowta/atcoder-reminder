@@ -2,7 +2,6 @@ import os
 import time
 import io
 import random
-import datetime as dt
 import pandas as pd
 import datetime
 import requests
