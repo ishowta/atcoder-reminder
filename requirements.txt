@@ -13,3 +13,4 @@ html5lib==1.0.1
 bs4==0.0.1
 mypy==0.630
 yapf==0.24.0
+autoflake==1.2
