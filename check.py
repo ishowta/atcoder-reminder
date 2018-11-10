@@ -115,8 +115,6 @@ if __name__ == '__main__':
 	logger.info('Store contest list')
 	previous_contest_list.append(new_contest_list).to_pickle(contest_list_file_path)
 
-	embed()
-
 	if new_contest_list.empty:
 		logger.info("There is no new contest.")
 		exit()
