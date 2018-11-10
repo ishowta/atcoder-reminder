@@ -99,12 +99,10 @@ def setContestReminder(new_contest_list: pd.DataFrame) -> None:
             for i, c in contests.iterrows()
         ]
         Slack.setReminder(
-            config['slack']['channel_name'],
             contests.iloc[0]['date'] - dt.timedelta(hours=12),
             '今日の' + contests.iloc[0]['date'].strftime('%H:%M') + 'から ' +
             '・'.join(contests_link_str_list) + ' が行われます')
-        Slack.setReminder(config['slack']['channel_name'],
-                          contests.iloc[0]['date'] - dt.timedelta(minutes=15),
+        Slack.setReminder(contests.iloc[0]['date'] - dt.timedelta(minutes=15),
                           '開始15分前です')
 
     # Remind generate contest result
@@ -125,6 +123,7 @@ if __name__ == '__main__':
     config.read('config.ini')
 
     Slack = slack.Slack(
+        channel=config['slack']['channel_name'],
         token=config['slack']['token'],
         legacy_token=config['slack']['legacy_token'],
         name=config['slack']['name'],

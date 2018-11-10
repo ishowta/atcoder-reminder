@@ -324,13 +324,15 @@ if __name__ == '__main__':
         'contest_id_list',
         nargs='+',
     )
-    parser.add_argument('--data_path', default='data')
+    parser.add_argument('--mode', default='deployment')
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
     config.read('config.ini')
 
     Slack = slack.Slack(
+        channel=config['slack']['channel_name']
+        if args.mode == 'deployment' else config['slack']['test_channel_name'],
         token=config['slack']['token'],
         name=config['slack']['name'],
         icon=config['slack']['icon'],
@@ -347,8 +349,9 @@ if __name__ == '__main__':
 
     logger.info('Contest list: ' + ' '.join(args.contest_id_list))
 
-    contest_list_path = args.data_path + '/contest_list.pickle'
-    user_list_path = args.data_path + '/user_list.pickle'
+    data_path = 'data' if args.mode == 'deployment' else 'tmp/data'
+    contest_list_path = data_path + '/contest_list.pickle'
+    user_list_path = data_path + '/user_list.pickle'
 
     # コンテスト情報のロード
     logger.info('Load contest data')
@@ -380,7 +383,6 @@ if __name__ == '__main__':
     logger.info('Post contest result')
     Slack.postImage(
         'result-' + str(dt.datetime.now().timestamp()) + '.png',
-        config['slack']['channel_name'],
         'Contest Result',
         image=result)
 
@@ -425,7 +427,6 @@ if __name__ == '__main__':
     logger.info('Post chart')
     Slack.postImage(
         'chart-' + str(dt.datetime.now().timestamp()) + '.png',
-        config['slack']['channel_name'],
         'Rating Update',
         image=chart)
 
