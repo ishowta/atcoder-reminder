@@ -40,7 +40,7 @@ def fetchContestList():
 	})
 
 def isNew(contest, previous_contest_list):
-	return contest['id'] not in previous_contest_list['id']
+	return contest['id'] not in previous_contest_list['id'].values
 
 def hasHeldToday(contest):
 	return ( contest['date'] - dt.datetime.now() ) < dt.timedelta(days=1)
