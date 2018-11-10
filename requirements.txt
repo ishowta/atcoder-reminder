@@ -12,3 +12,4 @@ webdriver-manager==1.7
 html5lib==1.0.1
 bs4==0.0.1
 mypy==0.630
+yapf==0.24.0
