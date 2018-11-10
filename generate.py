@@ -44,6 +44,33 @@ def fetchContestStatistics(link):
         op=browserOp
     )[0].iloc[:-2]
 
+    """
+        返ってくるテーブルの型と例（pandas側の仕様上セルに入っているのはstringなので、すべて`split(',')`して取り出す）
+        raw_contest_statistics = [
+            {
+                Rank: [
+                    (int) '1' # Rank
+                    (`(`+int+`)`) '(240)'  # Global rank
+                ],
+                User: [
+                    (link) /usres/hogehoge
+                    (string) hogehoge
+                ],
+                Score:
+                    when 不参加(得点・ミスなし）: ???(使ってない)
+                    when それ以外: [
+                        (得点(int) :option) 1000,
+                        (`(`+ミス数(int)+`)` :option) (2),
+                        (タイム(h:m) :option) 30:11
+                    ]
+                問題名1:
+                    Scoreと同じ
+                問題名2:
+                    ...
+                ...
+            }
+        ]
+    """
     get = lambda i: lambda x: x.split(',')[i]
     result = pd.DataFrame({
         'rank'          : raw_contest_statistics.Rank.map(get(0)),
