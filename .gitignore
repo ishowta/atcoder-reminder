@@ -112,3 +112,4 @@ tmp/*
 !.gitkeep
 ._*
 config.ini
+node_modules/

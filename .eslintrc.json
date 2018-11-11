@@ -1,0 +1,13 @@
+{
+    "extends": "standard",
+    "rules": {
+        "no-undef": "warn",
+        "no-unused-vars": "warn",
+        "camelcase": "off"
+    },
+    "globals": {
+        "window": true,
+        "createjs": true,
+        "$": true
+    }
+}

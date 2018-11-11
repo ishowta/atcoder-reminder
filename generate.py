@@ -11,7 +11,7 @@ from IPython import embed
 import util
 import slack
 import logging
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple, Union
 
 
 def fetchContestStatistics(link: str) -> pd.DataFrame:
@@ -91,7 +91,10 @@ def fetchContestStatistics(link: str) -> pd.DataFrame:
     del raw_contest_statistics['Rank']
     del raw_contest_statistics['User']
     del raw_contest_statistics['Score']
-    isCorrect = lambda item: len(str(item).split(',')) >= 2
+
+    def isCorrect(item: Union[int, str, float]) -> bool:
+        return len(str(item).split(',')) >= 2
+
     points = raw_contest_statistics.applymap(isCorrect)
 
     result['isJoin'] = [
@@ -271,13 +274,12 @@ def generateContestChart(uesr_list: pd.DataFrame,
     def generateChart(chart_range: Tuple[int, int, int, int]) -> Image.Image:
         def printChartOp(driver: Any) -> None:
             driver.execute_script(
-                "x_min=%d;x_max=%d;y_min=%d;y_max=%d" % chart_range)
+                "date_begin=%d;date_end=%d;rate_min=%d;rate_max=%d" %
+                chart_range)
             for ((i, u), chart) in zip(user_list.iterrows(), user_chart_list):
                 driver.execute_script(chart)
-                driver.execute_script('user_name="' + u['name'] +
-                                      '"; user_index=' + str(i) + ';')
-                driver.execute_script('initChart2()')
-            driver.execute_script('stage_graph.update()')
+                driver.execute_script('user_name="' + u['name'] + '"')
+                driver.execute_script('paintNewChart()')
 
         # Save web page with image
         return util.operateBrowser(
