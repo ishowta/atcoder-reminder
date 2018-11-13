@@ -289,9 +289,9 @@ def generateContestChart(uesr_list: pd.DataFrame,
 
     # 左端のタイムスタンプ,右端のタイムスタンプ,レート下限,レート上限
     im1 = generateChart(
-        (1502372400, int(dt.datetime.now().timestamp()) + 1000000, 0, 2000))
-    im2 = generateChart((1521540800,
-                         int(dt.datetime.now().timestamp()) + 1000000, 0, 800))
+        (1502372400/100, (int(dt.datetime.now().timestamp()) + 1000000)/100, 0, 2000))
+    im2 = generateChart((1521540800/100,
+                         (int(dt.datetime.now().timestamp()) + 1000000)/100, 0, 800))
     im1 = im1.crop((0, 0, 700, 400))
     im2 = im2.crop((0, 0, 700, 400))
     chart_image = util.concat_images_vertical(im1, im2)
