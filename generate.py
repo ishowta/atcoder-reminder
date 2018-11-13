@@ -274,8 +274,7 @@ def generateContestChart(uesr_list: pd.DataFrame,
     def generateChart(chart_range: Tuple[int, int, int, int]) -> Image.Image:
         def printChartOp(driver: Any) -> None:
             driver.execute_script(
-                "date_begin=%d;date_end=%d;rate_min=%d;rate_max=%d" %
-                chart_range)
+                "date_begin=%d;date_end=%d;rate_min=%d;rate_max=%d" % chart_range)
             for ((i, u), chart) in zip(user_list.iterrows(), user_chart_list):
                 driver.execute_script(chart)
                 driver.execute_script('user_name="' + u['name'] + '"')
