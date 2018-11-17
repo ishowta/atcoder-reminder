@@ -34,7 +34,7 @@ def fetchContestList() -> pd.DataFrame:
                 'id', 'date', 'title', 'link', 'time', 'finish_date',
                 'is_rating', 'rating_limit'
             })
-    raw_contest_list = all_contest_list[2]
+    raw_contest_list = all_contest_list[1]
     """
     返ってくるテーブルの型と例（pandas側の仕様上セルに入っているのはstringなので、すべて`split(',')`して取り出す）
     raw_contest_list = [
