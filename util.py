@@ -20,8 +20,7 @@ logger.setLevel(logging.INFO)
 
 def fullpage_screenshot(driver: Any) -> Image.Image:
     page_width = driver.execute_script("return document.body.offsetWidth")
-    page_height = driver.execute_script(
-        "return document.body.parentNode.scrollHeight")
+    page_height = driver.execute_script("return document.body.parentNode.scrollHeight")
     view_width = driver.execute_script("return document.body.clientWidth")
     view_height = driver.execute_script("return window.innerHeight")
 
@@ -36,8 +35,7 @@ def fullpage_screenshot(driver: Any) -> Image.Image:
     fn = 'tmp/' + str(random.random())
 
     for count, view in enumerate(view_list):
-        driver.execute_script("window.scrollTo({0}, {1})".format(
-            view.x, view.y))
+        driver.execute_script("window.scrollTo({0}, {1})".format(view.x, view.y))
         time.sleep(0.2)
 
         file_name = fn + "part_{0}.png".format(count)
@@ -45,10 +43,8 @@ def fullpage_screenshot(driver: Any) -> Image.Image:
         screenshot = Image.open(file_name)
 
         offset = (
-            view.x
-            if view.x <= page_width - view_width else page_width - view_width,
-            view.y if view.y <= page_height - view_height else
-            page_height - view_height,
+            view.x if view.x <= page_width - view_width else page_width - view_width,
+            view.y if view.y <= page_height - view_height else page_height - view_height,
         )
 
         page_image.paste(screenshot, offset)
@@ -68,9 +64,7 @@ def operateBrowser(url: str = None,
     options.add_argument('--headless')
     options.add_argument('--window-size=' + str(width) + ',' + str(height))
     options.add_argument('--no-sandbox')
-    driver = webdriver.Chrome(
-        executable_path=chrome.ChromeDriverManager('2.41').install(),
-        chrome_options=options)
+    driver = webdriver.Chrome(executable_path=chrome.ChromeDriverManager('2.41').install(), chrome_options=options)
     if page is not None:
         fn = 'tmp/' + str(random.random()) + '.html'
         with io.open(fn, 'w', encoding='utf-8') as fh:
@@ -88,12 +82,14 @@ def operateBrowser(url: str = None,
     return page
 
 
-def scrape(url: str,
-           *xpath_list: Union[str, List[str]]) -> Union[str, List[str]]:
+def scrape(url: str, *xpath_list: Union[str, List[str]]) -> Union[str, List[str]]:
     page = requests.get(url).text
     dom = lxml.html.fromstring(page)
     result = [dom.xpath(xpath) for xpath in xpath_list]
     return result if len(result) > 1 else result[0]
+
+
+pd.core.series.Series.splitBy = lambda self, i: self.map(lambda x: x[i])  # type: ignore
 
 
 def scrapeTable(
@@ -114,12 +110,12 @@ def scrapeTable(
             if res is not None:
                 return res
         text = obj.get_text(separator=',', strip=True)
-        return text if obj.name == 'th' or obj.a is None else ','.join(
-            [obj.a.get('href'), text])
+        return text if obj.name == 'th' or obj.a is None else ','.join([obj.a.get('href'), text])
 
     pd.io.html._BeautifulSoupHtml5LibFrameParser._text_getter = _extend_text_getter
 
-    data = pd.read_html(page, flavor='bs4')
+    raw_data = pd.read_html(page, flavor='bs4')
+    data = [table.applymap(lambda x: (str)(x).split(',')) for table in raw_data]
     return data
 
 
@@ -128,23 +124,20 @@ def setReminder(date: datetime.datetime, command: str) -> None:
     subprocess.Popen(
         'at %s <<< \'%s\'' % (date_s, command),
         shell=True,
-        executable='/bin/bash')
+        executable='/bin/bash'
+    )
     logger.info('set new reminder : at %s <<< \'%s\'' % (date_s, command))
 
 
 def concat_images_vertical(im1: Image.Image, im2: Image.Image) -> Image.Image:
-    dst = Image.new('RGB', (max(im1.width, im2.width),
-                            (im1.height + im2.height)), (255, 255, 255))
+    dst = Image.new('RGB', (max(im1.width, im2.width), (im1.height + im2.height)), (255, 255, 255))
     dst.paste(im1, (0, 0))
     dst.paste(im2, (0, im1.height))
     return dst
 
 
-def concat_images_horizontal(im1: Image.Image,
-                             im2: Image.Image) -> Image.Image:
-    dst = Image.new('RGB',
-                    ((im1.width + im2.width), max(im1.height, im2.height)),
-                    (255, 255, 255))
+def concat_images_horizontal(im1: Image.Image, im2: Image.Image) -> Image.Image:
+    dst = Image.new('RGB', ((im1.width + im2.width), max(im1.height, im2.height)), (255, 255, 255))
     dst.paste(im1, (0, 0))
     dst.paste(im2, (im1.width, 0))
     return dst

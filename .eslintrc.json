@@ -3,7 +3,13 @@
     "rules": {
         "no-undef": "warn",
         "no-unused-vars": "warn",
-        "camelcase": "off"
+        "camelcase": "off",
+        "max-len": [
+            "error",
+            {
+                "code": 120
+            }
+        ]
     },
     "globals": {
         "window": true,

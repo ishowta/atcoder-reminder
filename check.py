@@ -18,10 +18,7 @@ def readContestList() -> pd.DataFrame:
             return pickle.load(fh)
     else:
         return pd.DataFrame(
-            columns={
-                'id', 'date', 'title', 'link', 'time', 'finish_date',
-                'is_rating', 'rating_limit'
-            })
+            columns={'id', 'date', 'title', 'link', 'time', 'finish_date', 'is_rating', 'rating_limit'})
 
 
 def fetchContestList() -> pd.DataFrame:
@@ -30,10 +27,7 @@ def fetchContestList() -> pd.DataFrame:
     if len(all_contest_list) != 3:
         # 予定されているコンテストが一つも無い場合
         return pd.DataFrame(
-            columns={
-                'id', 'date', 'title', 'link', 'time', 'finish_date',
-                'is_rating', 'rating_limit'
-            })
+            columns={'id', 'date', 'title', 'link', 'time', 'finish_date', 'is_rating', 'rating_limit'})
     raw_contest_list = all_contest_list[1]
     """
     返ってくるテーブルの型と例（pandas側の仕様上セルに入っているのはstringなので、すべて`split(',')`して取り出す）
@@ -52,32 +46,20 @@ def fetchContestList() -> pd.DataFrame:
       }
     ]
   """
-    date_list = raw_contest_list['開始時刻'].map(lambda x: dt.datetime.strptime(x.split(',')[1][:-5], '%Y-%m-%d %H:%M:%S'))
-    time_list = raw_contest_list['時間'].map(lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x.split(':')[0]),minutes=int(x.split(':')[1])))
-
-    def get(i: int) -> Callable:
-        def access(x: str) -> str:
-            return x.split(',')[i]
-
-        return access
+    date_list = raw_contest_list['開始時刻'].map(
+        lambda x: dt.datetime.strptime(x.split(',')[1][:-5], '%Y-%m-%d %H:%M:%S'))
+    time_list = raw_contest_list['時間'].map(
+        lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x.split(':')[0]), minutes=int(x.split(':')[1])))
 
     return pd.DataFrame({
-        'id':
-        raw_contest_list['コンテスト名'].map(get(0)),
-        'date':
-        date_list,
-        'title':
-        raw_contest_list['コンテスト名'].map(get(1)),
-        'link':
-        raw_contest_list['コンテスト名'].map(get(0)),
-        'time':
-        time_list,
+        'id': raw_contest_list['コンテスト名'].splitBy(0),
+        'date': date_list,
+        'title': raw_contest_list['コンテスト名'].splitBy(1),
+        'link': raw_contest_list['コンテスト名'].splitBy(0),
+        'time': time_list,
         'finish_date': [d + t for d, t in zip(date_list, time_list)],
-        'is_rating':
-        raw_contest_list['Rated対象'].map(lambda x: x != '×'),
-        'rating_limit':
-        raw_contest_list['Rated対象'].map(
-            lambda x: -1 if x == '×' else 99999 if x == 'All' else int(x[2:])),
+        'is_rating': raw_contest_list['Rated対象'].map(lambda x: x != '×'),
+        'rating_limit': raw_contest_list['Rated対象'].map(lambda x: -1 if x == '×' else 99999 if x == 'All' else int(x[2:])),
     })
 
 
@@ -94,24 +76,24 @@ def setContestReminder(new_contest_list: pd.DataFrame) -> None:
     # Remind notify contest
     for i, contests in new_contest_list.groupby('date').__iter__():
         contests_link_str_list = [
-            '<https://beta.atcoder.jp' + c['link'] + '|' + c['title'] +
-            ('' if c['is_rating'] else '（レート変動なし）') + '>'
+            '<https://beta.atcoder.jp' + c['link'] + '|' + c['title'] + ('' if c['is_rating'] else '（レート変動なし）') + '>'
             for i, c in contests.iterrows()
         ]
         Slack.setReminder(
             contests.iloc[0]['date'] - dt.timedelta(hours=12),
-            '今日の' + contests.iloc[0]['date'].strftime('%H:%M') + 'から ' +
-            '・'.join(contests_link_str_list) + ' が行われます')
-        Slack.setReminder(contests.iloc[0]['date'] - dt.timedelta(minutes=15),
-                          '開始15分前です')
+            '今日の' + contests.iloc[0]['date'].strftime('%H:%M') + 'から ' + '・'.join(contests_link_str_list) + ' が行われます'
+        )
+        Slack.setReminder(
+            contests.iloc[0]['date'] - dt.timedelta(minutes=15),
+            '開始15分前です'
+        )
 
     # Remind generate contest result
     for i, contests in new_contest_list.groupby('finish_date').__iter__():
         contest_id_list = [c['id'] for i, c in contests.iterrows()]
         util.setReminder(
             contests.iloc[0]['finish_date'] + dt.timedelta(seconds=30),
-            'cd ' + os.getcwd() + ' && python3 generate.py ' +
-            ' '.join(contest_id_list) + ' >> log/generate.log 2>&1')
+            'cd ' + os.getcwd() + ' && python3 generate.py ' + ' '.join(contest_id_list) + ' >> log/generate.log 2>&1')
 
 
 if __name__ == '__main__':
@@ -138,11 +120,11 @@ if __name__ == '__main__':
 
     logger.info('Select new contest list')
     # コンテスト情報がいきなり変更されるかもしれないので、開始まで一日を切ったコンテストのみ登録する
-    new_contest_list = fetched_contest_list[ fetched_contest_list.apply(lambda contest: hasHeldToday(contest) and isNew(contest, previous_contest_list), axis=1) ]
+    new_contest_list = fetched_contest_list[fetched_contest_list.apply(
+        lambda contest: hasHeldToday(contest) and isNew(contest, previous_contest_list), axis=1)]
 
     logger.info('Store contest list')
-    previous_contest_list.append(new_contest_list).to_pickle(
-        contest_list_file_path)
+    previous_contest_list.append(new_contest_list).to_pickle(contest_list_file_path)
 
     if new_contest_list.empty:
         logger.info("There is no new contest.")

@@ -34,7 +34,8 @@ class Slack():
                 'username': self.name,
                 'icon_emoji': ':' + self.icon + ':',
                 'text': text,
-            })
+            }
+        )
 
     def postImage(self,
                   name: str,
@@ -56,7 +57,8 @@ class Slack():
             },
             files={
                 'file': (name, image, 'image/png'),
-            })
+            }
+        )
 
     def setReminder(self, date: datetime, comment: str) -> None:
         if self.legacy_token is None:
@@ -68,4 +70,5 @@ class Slack():
             '" -d "channel=' + self.channel + '" -d "username=' + self.name +
             '" -d "icon_emoji=%3A' + self.icon + '%3A" -d "text=' +
             urllib.parse.quote(comment) +
-            '" https://slack.com/api/chat.postMessage >> log/slack.txt 2>&1')
+            '" https://slack.com/api/chat.postMessage >> log/slack.txt 2>&1'
+        )
