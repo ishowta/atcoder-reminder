@@ -41,14 +41,19 @@ def fetchContestList() -> pd.DataFrame:
           (link) '/contests/ddcc2019-qual',
           (string) 'DISCO presents ディスカバリーチャンネル コードコンテスト2019 予選'
         ],
-        時間: (h:m) '01:30'
-        Rated対象: (`x` | `All` | `~ a`(a:int)) '~ 1199'
+        時間: [
+            (h:m) '01:30'
+        ]
+        Rated対象: [
+            (`x` | `All` | `~ a`(a:int)) '~ 1199'
+        ]
       }
     ]
   """
-    date_list = raw_contest_list['開始時刻'].map(
-        lambda x: dt.datetime.strptime(x.split(',')[1][:-5], '%Y-%m-%d %H:%M:%S'))
-    time_list = raw_contest_list['時間'].map(
+    date_list = raw_contest_list['開始時刻'].splitBy(1).map(
+        lambda x: dt.datetime.strptime(x[:-5], '%Y-%m-%d %H:%M:%S')
+    )
+    time_list = raw_contest_list['時間'].splitBy(0).map(
         lambda x: dt.timedelta() if x == '∞' else dt.timedelta(hours=int(x.split(':')[0]), minutes=int(x.split(':')[1])))
 
     return pd.DataFrame({
@@ -58,8 +63,8 @@ def fetchContestList() -> pd.DataFrame:
         'link': raw_contest_list['コンテスト名'].splitBy(0),
         'time': time_list,
         'finish_date': [d + t for d, t in zip(date_list, time_list)],
-        'is_rating': raw_contest_list['Rated対象'].map(lambda x: x != '×'),
-        'rating_limit': raw_contest_list['Rated対象'].map(lambda x: -1 if x == '×' else 99999 if x == 'All' else int(x[2:])),
+        'is_rating': raw_contest_list['Rated対象'].splitBy(0).map(lambda x: x != '×'),
+        'rating_limit': raw_contest_list['Rated対象'].splitBy(0).map(lambda x: -1 if x == '×' else 99999 if x == 'All' else int(x[2:])),
     })
 
 
