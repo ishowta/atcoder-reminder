@@ -217,7 +217,7 @@ def generateContestChart(current_user_list: pd.DataFrame,
     user_list['rating_diff'] = user_list.apply(
         lambda user: user['rating_current'] - user['rating_pre'] if not np.isnan(user['rating_pre']) else 0, axis=1)
     user_list['rank_diff'] = user_list.apply(
-        lambda user: user['rank_current'] - user['rank_pre'] if not np.isnan(user['rank_pre']) else 0, axis=1)
+        lambda user: user['rank_pre'] - user['rank_current'] if not np.isnan(user['rank_pre']) else 0, axis=1)
 
     logger.info('get users chart')
     user_chart_list = [
