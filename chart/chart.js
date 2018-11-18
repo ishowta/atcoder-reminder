@@ -59,9 +59,6 @@ function paintNewChart () {
   const cl = (x, y) => [c(x, y).x, c(x, y).y]
   const s = (x, y) => scaler.transformPoint(x, y)
   const sl = (x, y) => [s(x, y).x, s(x, y).y]
-  // BUGFIX: Maybe createjs has insert big num bug.
-  const toDate = (str) => new Date(str * 1000 * 100)
-  const toStr = (date) => date.getTime() / 1000 / 100
 
   function init () {
     stage = new createjs.Stage('ratingGraph')
@@ -135,11 +132,15 @@ function paintNewChart () {
     })
 
     // Render vertical axis
-    const nextMonth = (date) => toStr(new Date(toDate(date).getFullYear(), toDate(date).getMonth() + 1, 1))
+    // BUGFIX: Maybe createjs has insert big num bug.
+    const toDate = (str) => moment.unix(str * 100)
+    const toStr = (date) => date.unix() / 100
+    const nextMonth = (date) => toStr(toDate(date).add(1, 'months'))
     var month_step = date_range * 100 / (60 * 60 * 24 * 30) / (12 * 2)
     var date_current = nextMonth(date_begin)
+    var date_firstmonth = date_current
     while (date_current <= date_end) {
-      new createjs.Text(toDate(date_current).toString('MMM'), '12px Lato', '#000')
+      new createjs.Text(toDate(date_current).format('MMM'), '12px Lato', '#000')
         .to(background)
         .set(
           {
@@ -149,8 +150,8 @@ function paintNewChart () {
             textBaseline: 'top'
           }
         )
-      if (date_current === date_begin || toDate(date_current).getMonth() === 0) {
-        new createjs.Text(toDate(date_current).toString('yyyy'), '12px Lato', '#000')
+      if (date_current === date_firstmonth || toDate(date_current).month() === 0) {
+        new createjs.Text(toDate(date_current).format('YYYY'), '12px Lato', '#000')
           .to(background)
           .set(
             {
