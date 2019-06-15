@@ -22,13 +22,14 @@ def readContestList() -> pd.DataFrame:
 
 
 def fetchContestList() -> pd.DataFrame:
-    all_contest_list = util.scrapeTable(
+    # サイトには開催中のコンテスト・開催予定のコンテスト・終了したコンテストが掲載されている
+    all_raw_contest_list = util.scrapeTable(
         url='https://beta.atcoder.jp/contests?lang=ja')
-    if len(all_contest_list) != 3:
+    if len(all_raw_contest_list) != 3:
         # 予定されているコンテストが一つも無い場合
         return pd.DataFrame(
             columns={'id', 'date', 'title', 'link', 'time', 'finish_date', 'is_rating', 'rating_limit'})
-    raw_contest_list = all_contest_list[1]
+    raw_contest_list = all_raw_contest_list[1]
     """
     返ってくるテーブルの型と例（pandas側の仕様上セルに入っているのはstringなので、すべて`split(',')`して取り出す）
     raw_contest_list = [
@@ -78,7 +79,7 @@ def hasHeldToday(contest: pd.DataFrame) -> bool:
 
 def setContestReminder(new_contest_list: pd.DataFrame) -> None:
 
-    # Remind notify contest
+    # 12時間前の通知と15分前通知の登録
     for i, contests in new_contest_list.groupby('date').__iter__():
         contests_link_str_list = [
             '<https://beta.atcoder.jp' + c['link'] + '|' + c['title'] + ('' if c['is_rating'] else '（レート変動なし）') + '>'
@@ -93,7 +94,7 @@ def setContestReminder(new_contest_list: pd.DataFrame) -> None:
             '開始15分前です'
         )
 
-    # Remind generate contest result
+    # コンテスト結果通知の登録
     for i, contests in new_contest_list.groupby('finish_date').__iter__():
         contest_id_list = [c['id'] for i, c in contests.iterrows()]
         util.setReminder(
@@ -115,22 +116,22 @@ if __name__ == '__main__':
     )
 
     logger.info('Read previous contest list')
-    previous_contest_list = readContestList()
+    registered_contest_list = readContestList()
 
-    logger.info('Fetch contest list')
+    logger.info('Fetch current contest list')
     fetched_contest_list = fetchContestList()
 
     logger.info('Select new contest list')
     # コンテスト情報がいきなり変更されるかもしれないので、開始まで一日を切ったコンテストのみ登録する
     new_contest_list = fetched_contest_list[fetched_contest_list.apply(
-        lambda contest: hasHeldToday(contest) and isNew(contest, previous_contest_list), axis=1)]
-
-    logger.info('Store contest list')
-    previous_contest_list.append(new_contest_list).to_pickle(contest_list_file_path)
+        lambda contest: hasHeldToday(contest) and isNew(contest, registered_contest_list), axis=1)]
 
     if new_contest_list.empty:
         logger.info("There is no new contest.")
         exit()
+
+    logger.info('Save contest list')
+    registered_contest_list.append(new_contest_list).to_pickle(contest_list_file_path)
 
     logger.info('Set contest reminder')
     setContestReminder(new_contest_list)
