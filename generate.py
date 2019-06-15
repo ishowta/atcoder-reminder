@@ -244,7 +244,7 @@ def generateContestChart(current_user_list: pd.DataFrame,
             op=printChartOp)
 
     # 左端のタイムスタンプ,右端のタイムスタンプ,レート下限,レート上限
-    im1 = generateChart(((int)(1502372400/100), (int)((int(dt.datetime.now().timestamp()) + 1000000)/100), 1200, 2800))
+    im1 = generateChart(((int)(1521540800/100), (int)((int(dt.datetime.now().timestamp()) + 1000000)/100), 1200, 2800))
     im2 = generateChart(((int)(1521540800/100), (int)((int(dt.datetime.now().timestamp()) + 1000000)/100), 0, 1200))
     im1 = im1.crop((0, 0, 700, 400))
     im2 = im2.crop((0, 0, 700, 400))
