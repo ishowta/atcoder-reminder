@@ -197,9 +197,9 @@ def checkRatingUpdate(contest_list: pd.DataFrame,
     target_user_list['hasRateChanged'] = target_user_list.apply(checkChangeRate, axis=1)
     logger.info('rated user  : ' + ','.join(target_user_list['name'].values))
     logger.info('change user : '
-                + ','.join(target_user_list[target_user_list['hasRateChanged'].isnull() & target_user_list['hasRateChanged']]['name'].values))
+                + ','.join(target_user_list[target_user_list['hasRateChanged'] == True]['name'].values))
     logger.info('(new user)  : ' + ','.join(target_user_list[target_user_list['isNewUser']]['name'].values))
-    if (target_user_list['isNewUser'] | (target_user_list['hasRateChanged'].isnull() & target_user_list['hasRateChanged'])).all():
+    if (target_user_list['isNewUser'] | (target_user_list['hasRateChanged'] == True)).all():
         return True
     else:
         return False
