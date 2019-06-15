@@ -30,16 +30,15 @@ $(window).load(() => {
 */
 
 var is_first_paint = true
-function paintNewChart () {
-  /*
-  var rating_history = [{ 'EndTime': 1476538800, 'NewRating': 103, 'Place': 181, 'ContestName': 'AtCoder Beginner Contest 046', 'StandingsUrl': '/contests/abc046/standings?watching=ishowta' }, { 'EndTime': 1477750200, 'NewRating': 802, 'Place': 259, 'ContestName': 'AtCoder Grand Contest 006', 'StandingsUrl': '/contests/agc006/standings?watching=ishowta' }, { 'EndTime': 1481377200, 'NewRating': 763, 'Place': 191, 'ContestName': 'AtCoder Beginner Contest 049', 'StandingsUrl': '/contests/abc049/standings?watching=ishowta' }, { 'EndTime': 1488031200, 'NewRating': 800, 'Place': 422, 'ContestName': 'Mujin Programming Challenge 2017', 'StandingsUrl': '/contests/mujin-pc-2017/standings?watching=ishowta' }, { 'EndTime': 1509802800, 'NewRating': 837, 'Place': 520, 'ContestName': 'AtCoder Regular Contest 084', 'StandingsUrl': '/contests/arc084/standings?watching=ishowta' }, { 'EndTime': 1511012400, 'NewRating': 852, 'Place': 615, 'ContestName': 'AtCoder Beginner Contest 079', 'StandingsUrl': '/contests/abc079/standings?watching=ishowta' }, { 'EndTime': 1527342000, 'NewRating': 833, 'Place': 831, 'ContestName': 'AtCoder Regular Contest 098', 'StandingsUrl': '/contests/arc098/standings?watching=ishowta' }, { 'EndTime': 1528638000, 'NewRating': 899, 'Place': 523, 'ContestName': 'AtCoder Beginner Contest 099', 'StandingsUrl': '/contests/abc099/standings?watching=ishowta' }, { 'EndTime': 1529156400, 'NewRating': 1023, 'Place': 313, 'ContestName': 'AtCoder Beginner Contest 100', 'StandingsUrl': '/contests/abc100/standings?watching=ishowta' }]
-  const user_name = 'test'
-  var date_begin = 1502372400
-  var date_end = 1533724000
-  const rate_min = 0
-  const rate_max = 2000
-  */
 
+function paintNewChart ( // eslint-disable-line no-unused-vars
+  rating_history,
+  user_name,
+  date_begin,
+  date_end,
+  rate_min,
+  rate_max
+) {
   var date_range = date_end - date_begin
   const rate_range = rate_max - rate_min
 

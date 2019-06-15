@@ -36,7 +36,8 @@ def fetchContestStatistics(link: str) -> pd.DataFrame:
     def openResultViewOp(driver: Any) -> None:
         driver.find_element_by_id('standings-panel-heading')
         input = driver.find_element_by_id('input-affiliation')
-        driver.execute_script("document.getElementsByClassName('form-inline')[0].style.display = 'block';")
+        driver.execute_script(
+            "document.getElementsByClassName('form-inline')[0].style.display = 'block';")
         input.send_keys(config['atcoder']['affiliation'])
 
     raw_contest_statistics = util.scrapeTable(
@@ -118,7 +119,8 @@ def fetchUserList() -> pd.DataFrame:
         return None
 
     raw_user_list = util.scrapeTable(
-        url='https://beta.atcoder.jp/ranking?f.Affiliation=' + config['atcoder']['affiliation'],
+        url='https://beta.atcoder.jp/ranking?f.Affiliation=' +
+            config['atcoder']['affiliation'],
         tableOp=getColorOp
     )[1]
 
@@ -171,7 +173,8 @@ def checkRatingUpdate(contest_list: pd.DataFrame,
     """
     def selectRateTargetUser(contest: pd.DataFrame, statistics: pd.DataFrame) -> pd.DataFrame:
         def isRateTargetUser(user_result: pd.Series) -> bool:
-            pre_user = pre_user_list[pre_user_list['name'] == user_result['name']]
+            pre_user = pre_user_list[pre_user_list['name']
+                                     == user_result['name']]
             if pre_user.empty:
                 return user_result['isJoin']
             else:
@@ -192,13 +195,17 @@ def checkRatingUpdate(contest_list: pd.DataFrame,
         user
         for (i, c), s in zip(contest_list.iterrows(), contest_statistics_list)
         for user in list(selectRateTargetUser(c, s)['name']))
-    target_user_list = user_list[user_list['name'].isin(target_user_name_list)].copy()
-    target_user_list['isNewUser'] = ~target_user_list['name'].isin(pre_user_list['name'])
-    target_user_list['hasRateChanged'] = target_user_list.apply(checkChangeRate, axis=1)
+    target_user_list = user_list[user_list['name'].isin(
+        target_user_name_list)].copy()
+    target_user_list['isNewUser'] = ~target_user_list['name'].isin(
+        pre_user_list['name'])
+    target_user_list['hasRateChanged'] = target_user_list.apply(
+        checkChangeRate, axis=1)
     logger.info('rated user  : ' + ','.join(target_user_list['name'].values))
     logger.info('change user : '
                 + ','.join(target_user_list[target_user_list['hasRateChanged'] == True]['name'].values))
-    logger.info('(new user)  : ' + ','.join(target_user_list[target_user_list['isNewUser']]['name'].values))
+    logger.info('(new user)  : ' +
+                ','.join(target_user_list[target_user_list['isNewUser']]['name'].values))
     if (target_user_list['isNewUser'] | (target_user_list['hasRateChanged'] == True)).all():
         return True
     else:
@@ -213,7 +220,8 @@ def generateContestChart(current_user_list: pd.DataFrame,
         :param pre_user_list: コンテスト前の全ユーザーデータ
         :return: レーティングチャートの画像
     """
-    user_list = pd.merge(current_user_list, pre_user_list, on='name', how='left', suffixes=('_current', '_pre'))
+    user_list = pd.merge(current_user_list, pre_user_list,
+                         on='name', how='left', suffixes=('_current', '_pre'))
 
     user_list['rating_diff'] = user_list.apply(
         lambda user: user['rating_current'] - user['rating_pre'] if not np.isnan(user['rating_pre']) else 0, axis=1)
@@ -223,18 +231,27 @@ def generateContestChart(current_user_list: pd.DataFrame,
     logger.info('get users chart')
     user_chart_list = [
         util.scrape('https://beta.atcoder.jp/users/' + user['name'],
-                    '//*[@id="main-container"]/div[1]/div[3]/div/script[2]/text()')[0]
+                    '//*[@id="main-container"]/div[1]/div[3]/div/script[2]/text()')[0][4:-1]
         for i, user in current_user_list.iterrows()
     ]
 
     def generateChart(chart_range: Tuple[int, int, int, int]) -> Image.Image:
         def printChartOp(driver: Any) -> None:
-            driver.execute_script(
-                "date_begin=%d;date_end=%d;rate_min=%d;rate_max=%d" % chart_range)
             for ((i, u), chart) in zip(user_list.iterrows(), user_chart_list):
-                driver.execute_script(chart)
-                driver.execute_script('user_name="' + u['name'] + '"')
-                driver.execute_script('paintNewChart()')
+                logger.info('paintNewChart('
+                            + ','.join([
+                                chart,
+                                'user_name="%s"' % u['name'],
+                                "date_begin=%d, date_end=%d, rate_min=%d, rate_max=%d" % chart_range
+                            ])
+                            + ')')
+                driver.execute_script('paintNewChart('
+                                      + ','.join([
+                                          chart,
+                                          'user_name="%s"' % u['name'],
+                                          "date_begin=%d, date_end=%d, rate_min=%d, rate_max=%d" % chart_range
+                                      ])
+                                      + ')')
 
         # Save web page with image
         return util.operateBrowser(
@@ -244,8 +261,10 @@ def generateContestChart(current_user_list: pd.DataFrame,
             op=printChartOp)
 
     # 左端のタイムスタンプ,右端のタイムスタンプ,レート下限,レート上限
-    im1 = generateChart(((int)(1521540800/100), (int)((int(dt.datetime.now().timestamp()) + 1000000)/100), 1200, 2800))
-    im2 = generateChart(((int)(1521540800/100), (int)((int(dt.datetime.now().timestamp()) + 1000000)/100), 0, 1200))
+    im1 = generateChart(((int)(1521540800/100), (int)
+                         ((int(dt.datetime.now().timestamp()) + 1000000)/100), 1200, 2800))
+    im2 = generateChart(((int)(1521540800/100), (int)
+                         ((int(dt.datetime.now().timestamp()) + 1000000)/100), 0, 1200))
     im1 = im1.crop((0, 0, 700, 400))
     im2 = im2.crop((0, 0, 700, 400))
     chart_image = util.concat_images_vertical(im1, im2)
@@ -305,14 +324,16 @@ if __name__ == '__main__':
     # コンテスト情報のロード
     logger.info('Load contest data')
     all_contest_list = pickle.load(open(contest_list_path, 'rb'))
-    contest_list = all_contest_list[all_contest_list.id.isin(args.contest_id_list)]
+    contest_list = all_contest_list[all_contest_list.id.isin(
+        args.contest_id_list)]
     if len(contest_list) != len(args.contest_id_list):
         logger.error('A few contests does not exist in DB.')
         exit()
 
     # コンテスト結果のフェッチ
     logger.info('Fetch contest statistics')
-    contest_statistics_list = list(map(fetchContestStatistics, args.contest_id_list))
+    contest_statistics_list = list(
+        map(fetchContestStatistics, args.contest_id_list))
     if all(cs['result'].empty for cs in contest_statistics_list):
         logger.info('No one play any contest.')
         exit()
@@ -323,7 +344,8 @@ if __name__ == '__main__':
 
     # コンテスト結果画像の生成
     logger.info('Generate contest result image')
-    result = generateContestResult(contest_list, contest_statistics_list, user_list)
+    result = generateContestResult(
+        contest_list, contest_statistics_list, user_list)
 
     # コンテスト結果を投稿
     logger.info('Post contest result')

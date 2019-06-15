@@ -7,7 +7,7 @@
   - `at`
   - `cron`
   - `python3`
-  - `chromium-browser`
+  - `chromium browser`
   - `chromedriver`
   - `zlib`
   - `libjpeg`
