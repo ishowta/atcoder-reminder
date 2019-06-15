@@ -7,7 +7,10 @@
   - `at`
   - `cron`
   - `python3`
-  - `chromium-browser(ver 69)`
+  - `chromium-browser`
+  - `chromedriver`
+  - `zlib`
+  - `libjpeg`
 - Install python library
   - ex: `pip3 install -r requirements.txt`
 - Regist `check.py` in cron
