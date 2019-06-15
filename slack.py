@@ -61,5 +61,5 @@ class Slack():
         )
 
     def setReminder(self, date: datetime, comment: str) -> None:
-        util.setReminder(date, 'cd ' + os.getcwd() + ' && python3 sendMessage.py ' + urllib.parse.quote(comment)
-                         + ' >> log/slack.txt 2 > &1')
+        util.setReminder(date, 'cd ' + os.getcwd() + ' && python3 sendMessage.py "' + comment
+                         + '" >> log/slack.txt 2 > &1')
