@@ -343,7 +343,7 @@ if __name__ == '__main__':
 
     # 前回のユーザー情報のロード
     pre_user_list = pickle.load(open(user_list_path, 'rb')) if os.path.exists(
-        user_list_path) else pd.DataFrame(index=['color', 'count', 'name', 'rating', 'rank'])
+        user_list_path) else pd.DataFrame(columns=['color', 'count', 'name', 'rating', 'rank'])
 
     # レートが更新されるまで待つ
     logger.info('Wait rating update')
