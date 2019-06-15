@@ -103,6 +103,9 @@ def scrapeTable(
         else:
             page = operateBrowser(url=url, op=op)
 
+    with open("log/" + str(datetime.datetime.now()).replace(" ", "_") + ".html", mode='w') as f:
+        f.write(page)
+
     # `pd.read_html(htmlからtableを取ってくる関数)`でテーブル上のセルに対して任意のオペレーションを掛けられるようにする
     def _extend_text_getter(self: Any, obj: Any) -> str:
         if tableOp is not None:
