@@ -17,22 +17,16 @@ class Slack():
 
     def __init__(self,
                  channel: str,
-                 token: str,
-                 name: str,
-                 icon: str
+                 token: str
                  ) -> None:
         self.channel = channel
         self.token = token
-        self.name = name
-        self.icon = icon
 
     def post(self, text: str) -> None:
         requests.post(
             'https://slack.com/api/chat.postMessage', {
                 'token': self.token,
                 'channel': self.channel,
-                'username': self.name,
-                'icon_emoji': ':' + self.icon + ':',
                 'text': text,
             }
         )

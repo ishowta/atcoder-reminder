@@ -9,9 +9,7 @@ config.read('config.ini')
 
 Slack = slack.Slack(
     channel=config['slack']['channel_name'],
-    token=config['slack']['token'],
-    name=config['slack']['name'],
-    icon=config['slack']['icon'],
+    token=config['slack']['token']
 )
 
 message = sys.argv[1]

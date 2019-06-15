@@ -111,9 +111,7 @@ if __name__ == '__main__':
 
     Slack = slack.Slack(
         channel=config['slack']['channel_name'],
-        token=config['slack']['token'],
-        name=config['slack']['name'],
-        icon=config['slack']['icon'],
+        token=config['slack']['token']
     )
 
     logger.info('Read previous contest list')
