@@ -112,7 +112,6 @@ if __name__ == '__main__':
     Slack = slack.Slack(
         channel=config['slack']['channel_name'],
         token=config['slack']['token'],
-        legacy_token=config['slack']['legacy_token'],
         name=config['slack']['name'],
         icon=config['slack']['icon'],
     )

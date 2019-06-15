@@ -5,6 +5,7 @@ from PIL import Image
 from IPython import embed
 import logging
 import io
+import os
 from datetime import datetime
 from typing import Any
 logger = logging.getLogger(__name__)
@@ -18,13 +19,12 @@ class Slack():
                  channel: str,
                  token: str,
                  name: str,
-                 icon: str,
-                 legacy_token: str = None) -> None:
+                 icon: str
+                 ) -> None:
         self.channel = channel
         self.token = token
         self.name = name
         self.icon = icon
-        self.legacy_token = legacy_token
 
     def post(self, text: str) -> None:
         requests.post(
@@ -61,14 +61,5 @@ class Slack():
         )
 
     def setReminder(self, date: datetime, comment: str) -> None:
-        if self.legacy_token is None:
-            raise Exception(
-                "Legacy token does not set! If you send a slack message by shell, you must set `legacy_token` at construction."
-            )
-        util.setReminder(
-            date, 'curl -X POST -d "token=' + self.legacy_token +
-            '" -d "channel=' + self.channel + '" -d "username=' + self.name +
-            '" -d "icon_emoji=%3A' + self.icon + '%3A" -d "text=' +
-            urllib.parse.quote(comment) +
-            '" https://slack.com/api/chat.postMessage >> log/slack.txt 2>&1'
-        )
+        util.setReminder(date, 'cd ' + os.getcwd() + ' && python3 sendMessage.py ' + urllib.parse.quote(comment)
+                         + ' >> log/slack.txt 2 > &1')
