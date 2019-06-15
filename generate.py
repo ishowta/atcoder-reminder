@@ -222,7 +222,7 @@ def generateContestChart(current_user_list: pd.DataFrame,
     logger.info('get users chart')
     user_chart_list = [
         util.scrape('https://beta.atcoder.jp/users/' + user['name'],
-                    '//*[@id="main-container"]/div/div[3]/script[2]/text()')[0]
+                    '//*[@id="main-container"]/div[1]/div[3]/div/script[2]/text()')[0]
         for i, user in current_user_list.iterrows()
     ]
 
