@@ -1,5 +1,7 @@
 # Atcoder reminder
 
+It notifies you of Atcoder events and displays your team's competition results in a table and chart.
+
 ## Setup
 
 - Require
